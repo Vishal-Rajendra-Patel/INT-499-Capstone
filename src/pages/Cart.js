@@ -1,6 +1,10 @@
+import React from 'react';
 import { Trash2, Plus, Minus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 function Cart({ cart, onRemove, onUpdateQty }) {
+  const navigate = useNavigate();
+
   const totalPrice = cart.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
@@ -54,7 +58,12 @@ function Cart({ cart, onRemove, onUpdateQty }) {
 
           <div className="cart-summary">
             <h3>Total Price: ${totalPrice.toFixed(2)}</h3>
-            <button className="checkout-btn">Proceed to Checkout</button>
+            <button
+              className="checkout-btn"
+              onClick={() => navigate('/checkout')}
+            >
+              Proceed to Checkout
+            </button>
           </div>
         </div>
       )}

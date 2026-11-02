@@ -1,14 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import StreamList from './pages/StreamList';
 import Subscriptions from './pages/Subscriptions';
 import Cart from './pages/Cart';
+import CreditCard from './pages/CreditCard';
+import Login from './pages/Login';
 import About from './pages/About';
 import list from './data';
 import './App.css';
 
 function App() {
+  // Use sessionStorage so the login appears every time the app/tab is newly opened
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    return sessionStorage.getItem('eztech_logged_in') === 'true';
+  });
+
   // Load initial cart from LocalStorage or empty array
   const [cart, setCart] = useState(() => {
     const savedCart = localStorage.getItem('eztech_cart');
@@ -70,27 +77,40 @@ function App() {
   return (
     <Router>
       <div className="App">
-        <Navbar cartCount={totalCartCount} />
+        {isLoggedIn && <Navbar cartCount={totalCartCount} />}
 
         {warning && <div className="warning-banner">{warning}</div>}
 
         <Routes>
-          <Route path="/" element={<StreamList />} />
+          <Route
+            path="/login"
+            element={!isLoggedIn ? <Login setIsLoggedIn={setIsLoggedIn} /> : <Navigate to="/" />}
+          />
+
+          <Route
+            path="/"
+            element={isLoggedIn ? <StreamList /> : <Navigate to="/login" />}
+          />
           <Route
             path="/subscriptions"
-            element={<Subscriptions items={list} onAddToCart={handleAddToCart} />}
+            element={isLoggedIn ? <Subscriptions items={list} onAddToCart={handleAddToCart} /> : <Navigate to="/login" />}
           />
           <Route
             path="/cart"
             element={
-              <Cart
-                cart={cart}
-                onRemove={handleRemoveFromCart}
-                onUpdateQty={handleUpdateQuantity}
-              />
+              isLoggedIn ? (
+                <Cart
+                  cart={cart}
+                  onRemove={handleRemoveFromCart}
+                  onUpdateQty={handleUpdateQuantity}
+                />
+              ) : (
+                <Navigate to="/login" />
+              )
             }
           />
-          <Route path="/about" element={<About />} />
+          <Route path="/checkout" element={isLoggedIn ? <CreditCard /> : <Navigate to="/login" />} />
+          <Route path="/about" element={isLoggedIn ? <About /> : <Navigate to="/login" />} />
         </Routes>
       </div>
     </Router>
